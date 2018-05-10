@@ -16,8 +16,6 @@ static void *JWAudioPlayerBufferingRatioKVOKey = &JWAudioPlayerBufferingRatioKVO
 @interface JWAudioPlayer ()
 @property (nonatomic, strong) DOUAudioStreamer *streamer;
 @property (nonatomic, strong) Track *track;
-@property (nonatomic, copy) AudioPlayStatu statuBlock;
-@property (nonatomic, copy) AudioBufferProgress bufferBlock;
 @end
 
 @implementation JWAudioPlayer
@@ -40,11 +38,25 @@ static void *JWAudioPlayerBufferingRatioKVOKey = &JWAudioPlayerBufferingRatioKVO
     return self;
 }
 
-- (void)playWithUrl:(NSURL *)url {
+- (void)playWithUrl:(NSURL *)url Delegate:(id <JWAudioPlayerDelegate>)delegate {
     
     if (url==nil) {
         return;
     }
+    
+    @try {
+        [self removeStreamerObserver];
+    } @catch(id anException){
+    }
+    
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(recoverPlayStatu)]) {
+            [_delegate recoverPlayStatu];
+        }
+        _delegate = nil;
+    }
+    
+    _delegate = delegate;//重设代理
     
     if ([_track.audioFileURL.absoluteString isEqualToString:url.absoluteString] && _streamer) {
         [_streamer play];
@@ -53,11 +65,6 @@ static void *JWAudioPlayerBufferingRatioKVOKey = &JWAudioPlayerBufferingRatioKVO
     
     Track *track = [[Track alloc] init];
     track.audioFileURL = url;
-    
-    @try {
-        [self removeStreamerObserver];
-    } @catch(id anException){
-    }
     
     _streamer = nil;
     _streamer = [DOUAudioStreamer streamerWithAudioFile:track];
@@ -103,6 +110,9 @@ static void *JWAudioPlayerBufferingRatioKVOKey = &JWAudioPlayerBufferingRatioKVO
     if (_delegate&&[_delegate respondsToSelector:@selector(audioPlayerDidChangeStatu:)]) {
         [_delegate audioPlayerDidChangeStatu:_streamer.status];
     }
+    if (self.statuBlock) {
+        self.statuBlock(_streamer.status);
+    }
 }
 
 - (void)updatePlayCurrentTime {
@@ -115,6 +125,9 @@ static void *JWAudioPlayerBufferingRatioKVOKey = &JWAudioPlayerBufferingRatioKVO
     if (_delegate&&[_delegate respondsToSelector:@selector(audioPlayerDidChangeBufferProgress:)]) {
         [_delegate audioPlayerDidChangeBufferProgress:_streamer.bufferingRatio];
     }
+    if (self.progressBlock) {
+        self.progressBlock(_streamer.bufferingRatio);
+    }
 }
 
 - (void)pause {
@@ -125,6 +138,9 @@ static void *JWAudioPlayerBufferingRatioKVOKey = &JWAudioPlayerBufferingRatioKVO
     [_streamer play];
 }
 
+- (void)stop {
+    [_streamer stop];
+}
 
 - (NSTimeInterval)duration {
     return _streamer.duration;

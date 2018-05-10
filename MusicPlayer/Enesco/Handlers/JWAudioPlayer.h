@@ -15,16 +15,15 @@ typedef void(^AudioPlayStatu)(DOUAudioStreamerStatus statu);
 
 @protocol JWAudioPlayerDelegate <NSObject>
 
+@optional
+
 - (void)audioPlayerDidChangeStatu:(DOUAudioStreamerStatus)statu;
 
 - (void)audioPlayerDidChangeBufferProgress:(double)preogress;
 
 - (void)audioPlayerDidChangePlayCurrentTime:(NSTimeInterval)currentTime;
 
-@optional
-
-
-
+- (void)recoverPlayStatu;//回复原状态，用于上一个代理重置界面
 
 @end
 
@@ -33,14 +32,19 @@ typedef void(^AudioPlayStatu)(DOUAudioStreamerStatus statu);
 @property (nonatomic, assign, readonly)NSTimeInterval duration;
 
 @property (nonatomic, weak)id <JWAudioPlayerDelegate>delegate;
+@property (nonatomic, copy) AudioPlayStatu statuBlock;
+@property (nonatomic, copy) AudioBufferProgress progressBlock;
+
 
 + (instancetype)sharedInstance;
 
 
-- (void)playWithUrl:(NSURL *)url;
+- (void)playWithUrl:(NSURL *)url Delegate:(id <JWAudioPlayerDelegate>)delegate;
 
 - (void)pause;
 
 - (void)play;
+
+- (void)stop;
 
 @end

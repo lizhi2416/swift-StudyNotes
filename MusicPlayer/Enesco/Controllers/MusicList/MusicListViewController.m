@@ -11,6 +11,7 @@
 #import "MusicListCell.h"
 #import "MusicIndicator.h"
 #import "MBProgressHUD.h"
+#import "UIButton+WebCache.h"
 
 @interface MusicListViewController () <MusicViewControllerDelegate, MusicListCellDelegate>
 @property (nonatomic, strong) NSMutableArray *musicEntities;
