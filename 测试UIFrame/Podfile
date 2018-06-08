@@ -1,0 +1,13 @@
+platform :ios, '7.0'
+
+
+target '测试UIFrame' do
+
+inhibit_all_warnings!
+
+#用于适配
+pod 'Masonry'
+
+pod 'ReactiveCocoa', '2.5'
+
+end
